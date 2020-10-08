@@ -3,10 +3,10 @@ import vtk, ctk, ast
 import qt
 
 import slicer
-from sessionData import SessionData, RegistrationResult, RegistrationTypeData
-from constants import SliceTrackerConstants
-from helpers import SeriesTypeManager
-from preopHandler import PreopDataHandler
+from .sessionData import SessionData, RegistrationResult, RegistrationTypeData
+from .constants import SliceTrackerConstants
+from .helpers import SeriesTypeManager
+from .preopHandler import PreopDataHandler
 
 from SlicerDevelopmentToolboxUtils.constants import DICOMTAGS, STYLE
 from SlicerDevelopmentToolboxUtils.events import SlicerDevelopmentToolboxEvents

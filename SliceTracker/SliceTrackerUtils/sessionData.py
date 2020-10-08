@@ -9,8 +9,8 @@ from SlicerDevelopmentToolboxUtils.mixins import ModuleLogicMixin
 from SlicerDevelopmentToolboxUtils.decorators import onExceptionReturnNone, logmethod
 from SlicerDevelopmentToolboxUtils.widgets import CustomStatusProgressbar
 
-from constants import SliceTrackerConstants
-from helpers import SeriesTypeManager
+from .constants import SliceTrackerConstants
+from .helpers import SeriesTypeManager
 
 
 class SessionData(ModuleLogicMixin):
@@ -323,7 +323,7 @@ class SessionData(ModuleLogicMixin):
         from git import Repo, InvalidGitRepositoryError
         repo = Repo(dirname, search_parent_directories=True)
         branch = repo.active_branch
-        print branch.name
+        print(branch.name)
         return {
           "GIT_WC_URL": repo.remote().url,
           "GIT_COMMIT_HASH": repo.head.object.hexsha

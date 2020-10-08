@@ -9,7 +9,7 @@ import sitkUtils
 
 from ..algorithms.zFrameRegistration import LineMarkerRegistration, OpenSourceZFrameRegistration
 from ..constants import SliceTrackerConstants
-from base import SliceTrackerLogicBase, SliceTrackerStep
+from .base import SliceTrackerLogicBase, SliceTrackerStep
 
 from SlicerDevelopmentToolboxUtils.decorators import onModuleSelected
 from SlicerDevelopmentToolboxUtils.helpers import SliceAnnotation

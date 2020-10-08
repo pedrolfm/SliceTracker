@@ -306,7 +306,7 @@ def main(argv):
 
     for inputFile in [args.fixed_label, args.moving_label, args.fixed_volume, args.moving_volume]:
       if not os.path.isfile(inputFile):
-        raise AttributeError, "File not found: %s" % inputFile
+        raise AttributeError("File not found: %s" % inputFile)
 
     success, fixedLabel = slicer.util.loadLabelVolume(args.fixed_label, returnNode=True)
     success, movingLabel = slicer.util.loadLabelVolume(args.moving_label, returnNode=True)
@@ -325,8 +325,8 @@ def main(argv):
     if args.output_directory != "-":
       logic.registrationResult.save(args.output_directory)
 
-  except Exception, e:
-    print e
+  except Exception as e:
+    print(e)
   sys.exit(0)
 
 if __name__ == "__main__":
