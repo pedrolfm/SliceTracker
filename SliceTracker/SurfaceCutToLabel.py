@@ -8,8 +8,6 @@ from SlicerDevelopmentToolboxUtils.icons import Icons
 
 from EditorLib import ColorBox
 
-from SegmentEditorSurfaceCutLib import SurfaceCutLogic
-
 
 class SurfaceCutToLabel(ScriptedLoadableModule):
 
@@ -503,6 +501,7 @@ class SurfaceCutToLabelLogic(ModuleLogicMixin, ScriptedLoadableModuleLogic):
       self.reset()
 
   def _initializeSurfaceCutLogic(self):
+    from SegmentEditorSurfaceCutLib import SurfaceCutLogic
     self._surfaceCutLogic = SurfaceCutLogic(self.scriptedEffect)
 
   def updateModel(self, caller=None, event=None):
