@@ -101,7 +101,7 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
 
     defaultTemplateFile = os.path.join(self.resourcesPath, "zframe", self.ZFRAME_TEMPLATE_CONFIG_FILE_NAME)
 
-    reader = csv.reader(open(defaultTemplateFile, 'rb'))
+    reader = csv.reader(open(defaultTemplateFile, newline=''))
     try:
       next(reader)
       for row in reader:
