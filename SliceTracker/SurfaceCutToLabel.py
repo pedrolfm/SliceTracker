@@ -472,7 +472,7 @@ class SurfaceCutToLabelLogic(ModuleLogicMixin, ScriptedLoadableModuleLogic):
     self.deletedMarkupPositions = []
 
   def addInputMarkupNodeObserver(self):
-    self.inputMarkupNodeObserver = self.inputMarkupNode.AddObserver(vtk.vtkCommand.ModifiedEvent,
+    self.inputMarkupNodeObserver = self.inputMarkupNode.AddObserver(slicer.vtkMRMLMarkupsNode.PointModifiedEvent,
                                                                     self.onMarkupModified)
 
   def removeInputMarkupNodeObserver(self):
