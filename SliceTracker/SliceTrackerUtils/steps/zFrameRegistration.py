@@ -78,7 +78,7 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
   def loadZFrameModel(self):
     zFrameModelPath = os.path.join(self.resourcesPath, "zframe", self.ZFRAME_MODEL_PATH)
     if not self.zFrameModelNode:
-      _, self.zFrameModelNode = slicer.util.loadModel(zFrameModelPath, returnNode=True)
+      self.zFrameModelNode = slicer.util.loadModel(zFrameModelPath)
       self.zFrameModelNode.SetName(self.ZFRAME_MODEL_NAME)
       slicer.mrmlScene.AddNode(self.zFrameModelNode)
       modelDisplayNode = self.zFrameModelNode.GetDisplayNode()
