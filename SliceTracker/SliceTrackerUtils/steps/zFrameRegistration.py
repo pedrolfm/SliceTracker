@@ -21,6 +21,7 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
 
   __metaclass__ = Singleton
 
+  WORKSPACE_MODEL_PATH = "Workspace2.vtk"  #added jan 2023
   ZFRAME_MODEL_PATH = 'zframe-model.vtk'
   ZFRAME_TEMPLATE_CONFIG_FILE_NAME = 'ProstateTemplate.csv'
   ZFRAME_MODEL_NAME = 'ZFrameModel'
@@ -44,6 +45,7 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
   def resetAndInitializeData(self):
     self.templateVolume = None
 
+    self.workspaceModelNode = None #added jan. 2023
     self.zFrameModelNode = None
     self.zFrameTransform = None
 
@@ -60,6 +62,7 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
 
     self.clearOldNodes()
     self.loadZFrameModel()
+    self.loadWorkSpaceModel()
     self.loadTemplateConfigFile()
 
   def cleanup(self):
@@ -74,17 +77,35 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
     self.clearOldNodesByName(self.ZFRAME_TEMPLATE_PATH_NAME)
     self.clearOldNodesByName(self.ZFRAME_MODEL_NAME)
     # self.clearOldNodesByName(self.COMPUTED_NEEDLE_MODEL_NAME)
+    
+  # Added for the Smart template clinical trials (jan. 2023)
+  def loadWorkSpaceModel(self):
+    WorkspaceModelPath = os.path.join(self.resourcesPath, "zframe", self.WORKSPACE_MODEL_PATH)
+    print(WorkspaceModelPath)
+    if not self.workspaceModelNode:
+      self.workspaceModelNode = slicer.util.loadModel(WorkspaceModelPath)
+      self.workspaceModelNode.SetName(self.WORKSPACE_MODEL_PATH)
+      slicer.mrmlScene.AddNode(self.workspaceModelNode)
+      modelDisplayNode = self.workspaceModelNode.GetDisplayNode()
+      modelDisplayNode.SetColor(0, 1, 0)
+    self.workspaceModelNode.SetDisplayVisibility(False)
+    modelDisplayNode = self.workspaceModelNode.GetDisplayNode()
+    modelDisplayNode.SetColor(1, 0, 0)
+ ######
+
 
   def loadZFrameModel(self):
     zFrameModelPath = os.path.join(self.resourcesPath, "zframe", self.ZFRAME_MODEL_PATH)
+    print("here")
     if not self.zFrameModelNode:
       self.zFrameModelNode = slicer.util.loadModel(zFrameModelPath)
       self.zFrameModelNode.SetName(self.ZFRAME_MODEL_NAME)
       slicer.mrmlScene.AddNode(self.zFrameModelNode)
       modelDisplayNode = self.zFrameModelNode.GetDisplayNode()
-      modelDisplayNode.SetColor(1, 1, 0)
+      modelDisplayNode.SetColor(0, 1, 0)
     self.zFrameModelNode.SetDisplayVisibility(False)
-
+    modelDisplayNode = self.zFrameModelNode.GetDisplayNode()
+    modelDisplayNode.SetColor(1, 1, 0)
   def clearOldNodesByName(self, name):
     collection = slicer.mrmlScene.GetNodesByName(name)
     for index in range(collection.GetNumberOfItems()):
@@ -197,6 +218,12 @@ class SliceTrackerZFrameRegistrationStepLogic(SliceTrackerLogicBase):
       tvec = trans.MultiplyDoublePoint(vec)
       self.pathVectors.append(numpy.array([tvec[0] - offset[0], tvec[1] - offset[1], tvec[2] - offset[2]]))
       i += 1
+      
+      
+      
+  def setWorkSpaceVisibility(self, visibility):
+    self.setNodeVisibility(self.workspaceModelNode, visibility)
+    self.setNodeSliceIntersectionVisibility(self.workspaceModelNode, visibility)
 
   def setZFrameVisibility(self, visibility):
     self.setNodeVisibility(self.zFrameModelNode, visibility)
@@ -354,16 +381,19 @@ class SliceTrackerZFrameRegistrationStep(SliceTrackerStep):
 
   def onShowZFrameModelToggled(self, checked):
     self.logic.setZFrameVisibility(checked)
+    self.logic.setWorkSpaceVisibility(checked)
 
   def onShowZFrameTemplateToggled(self, checked):
     self.logic.setTemplateVisibility(checked)
     self.logic.setTemplatePathVisibility(checked)
 
   def onShowTemplatePathToggled(self, checked):
-    self.logic.setTemplatePathVisibility(checked)
+    print("'")
+    #self.logic.setTemplatePathVisibility(checked)
 
   def onShowNeedlePathToggled(self, checked):
-    self.logic.setNeedlePathVisibility(checked)
+    print("'")
+    #self.logic.setNeedlePathVisibility(checked)
 
   def resetViewSettingButtons(self):
     self.showTemplateButton.enabled = self.logic.templateSuccessfulLoaded
@@ -522,11 +552,42 @@ class SliceTrackerZFrameRegistrationStep(SliceTrackerStep):
       self.approveZFrameRegistrationButton.enabled = True
       self.retryZFrameRegistrationButton.enabled = True
 
-  def applyZFrameTransform(self):
+  def positionWorkSpace(self,mtx):
+ 
+    mtx_input = vtk.vtkMatrix4x4()
+    mtx.GetMatrixTransformToWorld(mtx_input)
+ 
+    _rotation = vtk.vtkMatrix4x4()
+    _translation = vtk.vtkMatrix4x4()
+
+    _translation.Identity()
+    _translation.SetElement(1,3,107.0)
+    _translation.SetElement(2,3,-114.0)
+
+    _rotation.Identity()
+    _rotation.SetElement(1,1,0.0)
+    _rotation.SetElement(1,2,1.0)
+    _rotation.SetElement(2,1,-1.0)
+    _rotation.SetElement(2,2,0.0)
+
+    _temp = vtk.vtkMatrix4x4()
+    rotatedZframe = vtk.vtkMatrix4x4()
+    
+    vtk.vtkMatrix4x4.Multiply4x4(mtx_input, _rotation, _temp)
+    vtk.vtkMatrix4x4.Multiply4x4(_translation, _temp, rotatedZframe)
+
+    transformNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTransformNode")
+    transformNode.SetAndObserveMatrixTransformToParent(rotatedZframe)
+       
+    self.logic.workspaceModelNode.SetAndObserveTransformNodeID(transformNode.GetID())
+
+
+  def applyZFrameTransform(self): #Changed jan 2023
     for node in [node for node in
                  [self.logic.pathModelNode, self.logic.tempModelNode,
-                  self.logic.zFrameModelNode, self.logic.needleModelNode] if node]:
+                  self.logic.zFrameModelNode,self.logic.workspaceModelNode, self.logic.needleModelNode] if node]:
       node.SetAndObserveTransformNodeID(self.session.data.zFrameRegistrationResult.transform.GetID())
+    self.positionWorkSpace(self.session.data.zFrameRegistrationResult.transform)
 
   def onApproveZFrameRegistrationButtonClicked(self):
     self.redSliceNode.SetSliceVisible(False)
