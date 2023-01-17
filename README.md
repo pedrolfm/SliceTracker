@@ -1,3 +1,8 @@
+
+# This repository was modified to show the achievable workspace when using the 4DoF Smart Template. It is partially working on Slicer 4
+
+
+
 ![Alt text](SliceTracker.png)
 
 ### Overview
